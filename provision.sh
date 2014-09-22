@@ -17,8 +17,7 @@ apt-get -y install build-essential binutils-doc git
 
 # Install Apache
 apt-get -y install apache2
-apt-get -y install php5 php5-curl php5-mysql php5-sqlite php5-xdebug mcrypt
-php5enmod mcrypt
+apt-get -y install php5 php5-curl php5-mysql php5-sqlite php5-xdebug
 
 sed -i "s/display_startup_errors = Off/display_startup_errors = On/g" ${php_config_file}
 sed -i "s/display_errors = Off/display_errors = On/g" ${php_config_file}
@@ -31,6 +30,18 @@ echo "mysql-server mysql-server/root_password_again password root" | sudo debcon
 apt-get -y install mysql-client mysql-server
 
 sed -i "s/bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/" ${mysql_config_file}
+
+
+#Install phpmyadmin (requires php5-mcrypt) and set variables
+export DEBIAN_FRONTEND=noninteractive 			#silent install		
+echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | sudo debconf-set-selections
+echo "phpmyadmin phpmyadmin/app-password-confirm password root" | sudo debconf-set-selections
+echo "phpmyadmin phpmyadmin/mysql/admin-pass password root" | sudo debconf-set-selections
+echo "phpmyadmin phpmyadmin/mysql/app-pass password root" | sudo debconf-set-selections
+echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | sudo debconf-set-selections
+apt-get -y -q install php5-mcrypt phpmyadmin
+php5enmod mcrypt
+
 
 # Allow root access from any host
 echo "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION" | mysql -u root --password=root
